@@ -14,3 +14,4 @@ To perform the tests we used the [FGVC-Aircraft Benchmark](http://www.robots.ox.
 
 ## Installation
 First, you need to install scikit, follow the steps [here](https://scikit-image.org/docs/dev/install.html)
+  `pip install -m requirements.txt`
