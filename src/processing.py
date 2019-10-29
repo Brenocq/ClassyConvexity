@@ -8,12 +8,12 @@ class PlaneProcessing:
 
     def __init__(self, path):
         onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
-        self.convexhull = []
         #print(onlyfiles)
     
     def findHCD(self, filename):
+        self.convexhull = []
 
-        img = cv2.imread("0.jpg")                                     # Read image
+        img = cv2.imread(filename)                                     # Read image
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)                  # Convert to grayscale
         blur = cv2.blur(gray, (3, 3))                                 # Blur the image
         ret, self.thresh = cv2.threshold(blur, 50, 255, cv2.THRESH_BINARY) # Binarize the image
@@ -47,9 +47,9 @@ class PlaneProcessing:
         self.contour    = [self.contour[0]]
         self.convexhull = [self.convexhull[0]]
         self.convexity_defects = cv2.convexityDefects(self.contour[0], hull_defects)
-        print(self.convexity_defects.shape)
+        #print(self.convexity_defects.shape)
         self.area_ratio = cv2.contourArea(self.contour[0]) / cv2.contourArea(self.convexhull[0])
-        print("ratio {}" .format(self.area_ratio))
+        #print("ratio {}" .format(self.area_ratio))
 
     def findDistances(self, point_array):
         distance_set = set()
@@ -58,11 +58,25 @@ class PlaneProcessing:
                 distance_set.add(round(cv2.norm(point_1, point_2), 3))
         distance_set = sorted (distance_set, reverse=True)
         #
-        print("main axis distance {}".format(distance_set[0]))
+        #print("main axis distance {}".format(distance_set[0]))
         self.main_axis_distance = distance_set[0]
 
+    def sortDefects(self):
+        defects_values = []
+
+        if self.convexity_defects is not None:
+            for defect in self.convexity_defects:
+                defects_values.append(defect[0][3])
+        defects_values.sort()
+        self.defect_values = defects_values
+        #print(defects_values)
+        #print(defects_values[0], defects_values[-1])
+
+
     def compute(self, filename):
-        pass
+        self.findHCD(filename)
+        self.findDistances(self.convexhull[0])
+        self.sortDefects()
 
     def drawImage(self):
         color_contours = (0, 255, 0) # green - color for contours
@@ -78,8 +92,9 @@ class PlaneProcessing:
         #            .format(cv2.contourArea(self.contour[0]),\
         #                    cv2.contourArea(self.convexhull[0])))
 
-        self.findDistances(self.convexhull[0])
-        print (self.convexity_defects)
+        #self.findDistances(self.convexhull[0])
+        #print (type(self.convexity_defects))
+        #self.sortDefects()
         #draw contour
         if self.contour is not None:
             cv2.drawContours(drawing, self.contour, 0, color_contours, 1, 8)
@@ -93,6 +108,13 @@ class PlaneProcessing:
         cv2.destroyAllWindows()
 
     def generateBulk(self, in_path, out_file):
+        #data = open(in_path, "w")
+        self.compute(in_path)
+        print("class: {}, main: {}, max_def: {}, min_def: {}, ratio: {}"\
+                .format(0, self.main_axis_distance,\
+                            self.defect_values[-1],\
+                            self.defect_values[0],\
+                            self.area_ratio))
         pass
 
 

@@ -4,6 +4,6 @@ processing = importlib.import_module("processing")
 #import processing.py
 
 img = processing.PlaneProcessing(path="/home/hiram/ClassyConvexity/src")
-img.findHCD(filename="hi.mock")
-img.drawImage()
-
+#img.findHCD(filename="hi.mock")
+#img.drawImage()
+img.generateBulk("0.jpg", "sla")
