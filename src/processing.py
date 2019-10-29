@@ -6,14 +6,14 @@ from scipy.spatial import ConvexHull # maybe we need a correct implementation of
 
 class PlaneProcessing:
 
-    def __init__(self, path):
-        onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
-        #print(onlyfiles)
+    def __init__(self):
+        print("init")
     
     def findHCD(self, filename):
         self.convexhull = []
-
-        img = cv2.imread(filename)                                     # Read image
+        print (filename)
+        img = cv2.imread(filename)
+        #cv2.imshow("read", img)                                     # Read image
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)                  # Convert to grayscale
         blur = cv2.blur(gray, (3, 3))                                 # Blur the image
         ret, self.thresh = cv2.threshold(blur, 50, 255, cv2.THRESH_BINARY) # Binarize the image
@@ -25,7 +25,7 @@ class PlaneProcessing:
             for point in contour:
                 if (point[0][0] == 0 or point[0][0] == img.shape[0]-1 or point[0][1] == 0 \
                     or point[0][1] == img.shape[1]-1):
-                    print("outer box! removing")
+                    #print("outer box! removing")
                     contours.remove(contour)
                     break
 
@@ -107,51 +107,34 @@ class PlaneProcessing:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    def generateBulk(self, in_path, out_file):
-        #data = open(in_path, "w")
-        self.compute(in_path)
-        print("class: {}, main: {}, max_def: {}, min_def: {}, ratio: {}"\
-                .format(0, self.main_axis_distance,\
+    def generateBulk(self, classif, directory, out_file_name):
+        data = open(str(out_file_name) + ".csv", "w")
+        #head class, main_axis, max_defect, min_defect, area_ratio
+        
+        onlyfiles = [f for f in os.listdir(directory) \
+        if os.path.isfile(os.path.join(directory, f))]
+        print(onlyfiles)
+        data.write("class, main_axis, max_defect, min_defect, area_ratio\n")
+        '''
+        for directory in self.path:
+            #find files
+            for file in directory_list:
+            self.compute(file)
+            data.write("{}, {}, {}, {}, {}"\
+                    .format(self.obj_class,\
+                            self.main_axis_distance,\
                             self.defect_values[-1],\
                             self.defect_values[0],\
                             self.area_ratio))
+        '''
+        for file in onlyfiles:
+            self.obj_class = 0
+            self.compute(directory + "/" + file)
+            data.write("{}, {}, {}, {}, {}\n"\
+                    .format(self.obj_class,\
+                            self.main_axis_distance,\
+                            self.defect_values[-1],\
+                            self.defect_values[0],\
+                            self.area_ratio))
+        data.close()
         pass
-
-
-'''
-# draw contours and hull points, and find convexity defects
-defects = [] 
-
-for i in range(len(contours)):
-	color_contours = (0, 255, 0) # green - color for contours
-	color = (255, 0, 0) # blue - color for convex hull
-	# draw ith contour
-	cv2.drawContours(drawing, contours, i, color_contours, 1, 8, hierarchy)
-	# draw ith convex hull object
-	cv2.drawContours(drawing, hull, i, color, 1, 8)
-	#print(len(hull[i]))
-	defects.append(cv2.convexityDefects(contours[i], hull_defects[i]))
-
-cv2.imshow("Image", drawing)
-cv2.waitKey(0)
-print(defects)
-'''
-'''
-TENDO AGORA OS CONTOURS E ETC, TEMOS QUE APRENDER A ENCONTRAR:
-	-OS PONTOS DE BICO E RABO DO AVIAO
-	-A PONTA DE CADA ASA
-	-A ÁREA DO AVIÃO/ÁREA DO CH
-	-OS DEFEITOS DE CONVEXIDADE, QUE JÁ TÃO QUASE TODOS IMPLEMENTADOS
-'''
-
-
-'''
-for i in range(defects.shape[0]):
-    s,e,f,d = defects[i,0]
-    start = tuple(cnt[s][0])
-    end = tuple(cnt[e][0])
-    far = tuple(cnt[f][0])
-    cv2.line(img,start,end,[0,255,0],2)
-    cv2.circle(img,far,5,[0,0,255],-1)
-'''
-
